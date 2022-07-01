@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const mysql_config = require('./mysql_config');
 const con = mysql.createConnection(mysql_config);
 
@@ -11,25 +11,53 @@ app.listen(3000, () => console.log('Example app is listening on port 3000.'));
 
 
 app.post('/register', function (req, res) {
-  console.log(req.body)
-  res.send('hi')
+  let {username, password} = req.body
+  
+  cryptPassword(password, (err, hash) => {
+    if (err) {
+      res.status(500).send('num deu')
+    } else {
+
+      password = hash
+
+      let args = [username, password]
+      con.execute('INSERT INTO `users`(`username`, `password`) VALUES (?, ?);', args, (err, result, fields) => {
+        if (err) {
+          res.status(500).send('se vira')
+        } else {
+          res.status(201).send(`deu c: ... O usuário ${username} foi criado com sucesso!`)
+        }
+      });
+    }
+  })
 })
 
+app.post('/login', function (req, res) {
+  let {username, password} = req.body
+  
+  let args = [username]
+  
+  con.execute('SELECT * FROM users WHERE username = ? LIMIT 1', args, (err, result, fields) => {
+    if (err) {
+      res.status(500).send('num deu')
+    } else {
+      console.log({err, result})
 
+      let user = result[0]
+      let stored_password = user.password
 
-cryptPassword('123456', (err, hash) => {
-  console.log(err, hash)
+      comparePassword(password, stored_password, (err, correct_password) => {
+        if (err) {
+          res.status(500).send('se vira')
+        } else {
 
-  comparePassword('123456', hash, (err, a2) => {
-    console.log('123456', err, a2)
+          if (correct_password) {
+            res.status(200).send(`Achei o cê e seu número é ${user.id}`)
+          } else {
+            res.status(404).send('User not found')
+          }
+        }
+      })
+    }
   })
-
-  comparePassword('111111', hash, (err, a2) => {
-    console.log('111111', err, a2)
-  })
-
-  comparePassword('', hash, (err, a2) => {
-    console.log('', err, a2)
-  })
-
 })
