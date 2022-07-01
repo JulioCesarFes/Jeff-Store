@@ -1,13 +1,13 @@
-const express = require('express');
-const mysql = require('mysql2');
-const mysql_config = require('./mysql_config');
-const con = mysql.createConnection(mysql_config);
+const express = require('express')
+const mysql = require('mysql2')
+const mysql_config = require('./mysql_config')
+const con = mysql.createConnection(mysql_config)
 
-const {cryptPassword, comparePassword} = require('./password_encryption');
+const {cryptPassword, comparePassword} = require('./password_encryption')
 
-const app = express();
-app.use(express.json());
-app.listen(3000, () => console.log('Example app is listening on port 3000.'));
+const app = express()
+app.use(express.json())
+app.listen(3000, () => console.log('Example app is listening on port 3000.'))
 
 
 app.post('/register', function (req, res) {
@@ -21,13 +21,13 @@ app.post('/register', function (req, res) {
       password = hash
 
       let args = [username, password]
-      con.execute('INSERT INTO `users`(`username`, `password`) VALUES (?, ?);', args, (err, result, fields) => {
+      con.execute('INSERT INTO `users`(`username`, `password`) VALUES (?, ?)', args, (err, result, fields) => {
         if (err) {
           res.status(500).send('se vira')
         } else {
           res.status(201).send(`deu c: ... O usuário ${username} foi criado com sucesso!`)
         }
-      });
+      })
     }
   })
 })
